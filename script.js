@@ -81,8 +81,38 @@ let pendingCategories = new Set();
 let searchQuery = '';
 let map, clusterGroup;
 let activePlace = null;
+const spotStore = { get: () => JSON.parse(localStorage.getItem('urbexSpots') || '[]'), set: value => localStorage.setItem('urbexSpots', JSON.stringify(value)) };
+const subscriptionStore = { get: () => JSON.parse(localStorage.getItem('urbexSubscriptions') || '[]'), set: value => localStorage.setItem('urbexSubscriptions', JSON.stringify(value)) };
+const userStore = { get: () => JSON.parse(localStorage.getItem('urbexUser') || '{"xp":120,"level":2}'), set: value => localStorage.setItem('urbexUser', JSON.stringify(value)) };
+const reportStore = { get: () => JSON.parse(localStorage.getItem('urbexReports') || '[]'), set: value => localStorage.setItem('urbexReports', JSON.stringify(value)) };
+
+function grantXP(amount) { const user = userStore.get(); user.xp += amount; user.level = user.xp >= 700 ? 5 : user.xp >= 400 ? 3 : user.xp >= 100 ? 2 : 1; userStore.set(user); }
+function canPost(key, waitSeconds) { const now = Date.now(), last = Number(localStorage.getItem(`urbexLast${key}`) || 0); if (now - last < waitSeconds * 1000) return false; localStorage.setItem(`urbexLast${key}`, String(now)); return true; }
+
+function toggleMapTheme() {
+  const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = next;
+  localStorage.setItem('urbexTheme', next);
+  const button = document.querySelector('.theme-toggle');
+  button.classList.remove('is-switching');
+  void button.offsetWidth;
+  button.classList.add('is-switching');
+  button.innerHTML = `<span class="theme-glyph">${next === 'dark' ? '☀︎' : '☾'}</span>`;
+}
+
+const uploadStore = {
+  get: () => JSON.parse(localStorage.getItem('urbexUploads') || '[]'),
+  set: (value) => localStorage.setItem('urbexUploads', JSON.stringify(value))
+};
+const commentStore = {
+  get: () => JSON.parse(localStorage.getItem('urbexComments') || '{}'),
+  set: (value) => localStorage.setItem('urbexComments', JSON.stringify(value))
+};
 
 function initMap() {
+  const theme = localStorage.getItem('urbexTheme') || 'dark';
+  document.documentElement.dataset.theme = theme;
+  document.querySelector('.theme-toggle').innerHTML = `<span class="theme-glyph">${theme === 'dark' ? '☀︎' : '☾'}</span>`;
   map = L.map('map', { zoomControl: false, attributionControl: false }).setView([50.1109, 8.6821], 12);
   currentLayer.addTo(map);
 
@@ -175,20 +205,13 @@ function confirmCategories() {
 
 function createCustomPinSVG(color, iconSvg) {
   return `
-    <div class="custom-urbex-pin">
-      <svg class="pin-svg-wrapper" viewBox="0 0 32 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M16 0C7.163 0 0 7.163 0 16c0 10.5 13.8 24.6 15.1 25.8a1.2 1.2 0 001.8 0C18.2 40.6 32 26.5 32 16 32 7.163 24.837 0 16 0z" fill="#0c0f14"/>
-        <path d="M16 2C8.268 2 2 8.268 2 16c0 9.2 12.4 22.4 14 24 1.6-1.6 14-14.8 14-24C30 8.268 23.732 2 16 2z" fill="#1a2028"/>
-        <circle cx="16" cy="16" r="10" fill="${color}" fill-opacity="0.25" stroke="${color}" stroke-width="1.5"/>
-      </svg>
-      <div class="pin-icon-container">${iconSvg}</div>
-    </div>
+    <div class="custom-urbex-pin" style="--marker-color:${color}" aria-label="Spot auf Karte"><span class="map-pin-icon">${iconSvg}</span></div>
   `;
 }
 
 function renderMarkers() {
   clusterGroup.clearLayers();
-  const filtered = MOCK_PLACES.filter(place => {
+  const filtered = [...MOCK_PLACES, ...spotStore.get()].filter(place => {
     const matchesCat = selectedCategories.size > 0 && selectedCategories.has(place.category);
     const matchesSearch = !searchQuery || place.name.toLowerCase().includes(searchQuery);
     return matchesCat && matchesSearch;
@@ -200,8 +223,8 @@ function renderMarkers() {
     const icon = L.divIcon({
       html: pinHtml,
       className: '',
-      iconSize: [32, 42],
-      iconAnchor: [16, 42]
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
     });
     const marker = L.marker([place.latitude, place.longitude], { icon: icon });
     marker.on('click', () => {
@@ -225,6 +248,19 @@ function showDetails(place) {
   document.getElementById('detail-cat').style.borderColor = cat.color + "55";
   document.getElementById('detail-coords').innerText = `${place.latitude.toFixed(4)}, ${place.longitude.toFixed(4)}`;
 
+  let bell = document.getElementById('spot-subscribe-button');
+  if (!bell) { bell = document.createElement('button'); bell.id = 'spot-subscribe-button'; bell.className = 'spot-subscribe'; document.querySelector('.tag-group').appendChild(bell); }
+  const subscribed = subscriptionStore.get().includes(place.id);
+  bell.innerHTML = subscribed ? '🔔 Benachrichtigungen an' : '🔕 Spot beobachten';
+  bell.classList.toggle('is-active', subscribed);
+  bell.onclick = () => toggleSubscription(place.id);
+  let creator = document.getElementById('spot-creator');
+  if (!creator) { creator = document.createElement('span'); creator.id = 'spot-creator'; creator.className = 'spot-creator'; document.querySelector('.tag-group').appendChild(creator); }
+  creator.textContent = `Von ${place.author || 'URBEX MAP'}`;
+  let report = document.getElementById('spot-report-button');
+  if (!report) { report = document.createElement('button'); report.id = 'spot-report-button'; report.className = 'spot-report'; document.querySelector('.tag-group').appendChild(report); }
+  report.textContent = '⚑ Melden'; report.onclick = () => openReportModal(place);
+
   updateSecurityBadge('sec-security', place.security?.security);
   updateSecurityBadge('sec-alarm', place.security?.alarm);
   updateSecurityBadge('sec-cameras', place.security?.cameras);
@@ -232,19 +268,44 @@ function showDetails(place) {
 
   const galleryList = document.getElementById('gallery-list');
   let galleryHtml = '';
-  if (place.gallery && place.gallery.length > 0) {
-    place.gallery.forEach(imgUrl => {
+  const approvedUploads = uploadStore.get().filter(upload => upload.spot === place.name && upload.status === 'approved').map(upload => upload.url);
+  const visibleGallery = [...(place.gallery || []), ...approvedUploads];
+  if (visibleGallery.length > 0) {
+    visibleGallery.forEach(imgUrl => {
       galleryHtml += `<img class="gallery-thumb" src="${imgUrl}" onclick="openModal('Foto Ansicht', '<img src=\\'${imgUrl}\\' style=\\'width:100%; border-radius:6px;\\'>')" />`;
     });
   }
   galleryHtml += `<button class="btn-add-photo" onclick="openPhotoModal()"><span>📷</span><span>+ Foto</span></button>`;
   galleryList.innerHTML = galleryHtml;
 
+  renderComments(place);
+
   document.getElementById('detail-route-btn').onclick = () => {
     window.open(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`, '_blank');
   };
 
   panel.style.display = 'flex';
+}
+
+function renderComments(place) {
+  const comments = commentStore.get()[place.id] || [];
+  document.getElementById('comment-list').innerHTML = comments.length
+    ? comments.map(comment => `<div class="comment"><b>${comment.author}</b><p>${comment.text}</p></div>`).join('')
+    : '<p class="empty-comment">Noch keine Kommentare. Teile hilfreiche Hinweise, ohne sensible Zugänge preiszugeben.</p>';
+}
+
+function saveComment(event) {
+  event.preventDefault();
+  const field = document.getElementById('comment-input');
+  const text = field.value.trim();
+  if (!text || !activePlace) return;
+  if (!canPost('Comment', 30)) { openModal('Bitte kurz warten', '<p style="color:var(--text-muted);font-size:13px">Zum Schutz vor Spam ist ein Kommentar alle 30 Sekunden möglich.</p>'); return; }
+  const comments = commentStore.get();
+  comments[activePlace.id] = [...(comments[activePlace.id] || []), { author: 'Felix S.', text }];
+  commentStore.set(comments);
+  grantXP(5);
+  field.value = '';
+  renderComments(activePlace);
 }
 
 function updateSecurityBadge(elementId, isActive) {
@@ -292,7 +353,7 @@ function openPhotoModal() {
   const bodyHtml = `
     <div style="display:flex; flex-direction:column; gap:12px;">
       <p style="font-size:13px; color:var(--text-muted);">Lade ein eigenes Foto zu <b>${activePlace.name}</b> hoch.</p>
-      <input type="text" id="photo-url-input" placeholder="Bild-URL einfügen (z. B. Imgur…)" style="width:100%; padding:9px 11px; border-radius:6px; background:#0c0f14; border:1px solid var(--panel-border); color:var(--text); outline:none; font-size:13px;">
+      <input type="file" id="photo-file-input" accept="image/png,image/jpeg,image/webp" style="width:100%; padding:9px; border-radius:6px; background:#0c0f14; border:1px solid var(--panel-border); color:var(--text); font-size:12px;">
       <button type="button" class="btn-primary-action" onclick="savePhoto()">Foto hinzufügen</button>
     </div>
   `;
@@ -300,14 +361,40 @@ function openPhotoModal() {
 }
 
 function savePhoto() {
-  const url = document.getElementById('photo-url-input').value;
-  if (url && activePlace) {
-    if (!activePlace.gallery) activePlace.gallery = [];
-    activePlace.gallery.push(url);
-    showDetails(activePlace);
+  const file = document.getElementById('photo-file-input').files[0];
+  if (!file || !activePlace) return;
+  if (!canPost('Upload', 60)) { openModal('Bitte kurz warten', '<p style="color:var(--text-muted);font-size:13px">Zum Schutz vor Spam ist ein Bild pro Minute möglich.</p>'); return; }
+  if (file.size > 2 * 1024 * 1024) {
+    openModal('Bild zu groß', '<p style="color:var(--text-muted);font-size:13px;line-height:1.55;">Bitte wähle ein Bild bis maximal 2 MB.</p>');
+    return;
   }
-  closeModal();
+  const reader = new FileReader();
+  reader.onload = () => {
+    const uploads = uploadStore.get();
+    uploads.push({ id: String(Date.now()), spot: activePlace.name, url: reader.result, note: 'Foto von der Community-Galerie eingereicht.', status: 'pending' });
+    uploadStore.set(uploads);
+    grantXP(15);
+    openModal('Foto eingereicht', '<p style="color:var(--text-muted);font-size:13px;line-height:1.55;">Danke! Dein Foto wird erst nach der Prüfung durch das Moderationsteam in der Galerie sichtbar.</p>');
+  };
+  reader.readAsDataURL(file);
 }
+
+function toggleSubscription(spotId) {
+  const subscriptions = subscriptionStore.get();
+  subscriptionStore.set(subscriptions.includes(spotId) ? subscriptions.filter(id => id !== spotId) : [...subscriptions, spotId]);
+  showDetails(activePlace);
+}
+
+function openAddSpotModal() {
+  const categories = Object.entries(CATEGORIES).map(([key, cat]) => `<option value="${key}">${cat.name}</option>`).join('');
+  openModal('Neuen Spot vorschlagen', `<form onsubmit="saveNewSpot(event)" class="add-spot-form"><p>Spot-Vorschläge werden vor einer Veröffentlichung geprüft. Teile keine sensiblen Zugangsinformationen.</p><input id="new-spot-name" required maxlength="80" placeholder="Name des Ortes"><select id="new-spot-category">${categories}</select><input id="new-spot-coords" required placeholder="Koordinaten: 51.123, 6.456 oder 51°12'29.3\"N 6°22'22.6\"E"><textarea id="new-spot-desc" required maxlength="300" placeholder="Kurze Beschreibung, keine Zugänge"></textarea><label class="upload-file">📷 Titelbild hinzufügen <input id="new-spot-image" type="file" accept="image/png,image/jpeg,image/webp"></label><fieldset class="security-select"><legend>Sicherheit vor Ort</legend><label><input type="checkbox" name="spot-sec" value="security"> Security</label><label><input type="checkbox" name="spot-sec" value="alarm"> Alarm</label><label><input type="checkbox" name="spot-sec" value="cameras"> Kameras</label><label><input type="checkbox" name="spot-sec" value="dogs"> Wachhunde</label></fieldset><button class="btn-primary-action" type="submit">Spot zur Prüfung einreichen</button></form>`);
+}
+
+function parseCoordinates(value) { const decimal = value.match(/^\s*(-?\d+(?:\.\d+)?)\s*[,;\s]\s*(-?\d+(?:\.\d+)?)\s*$/); if (decimal) return [Number(decimal[1]), Number(decimal[2])]; const dms = value.match(/(\d+)°(\d+)'([\d.]+)"?\s*([NS])\s+(\d+)°(\d+)'([\d.]+)"?\s*([EW])/i); if (!dms) return null; const lat=(+dms[1])+(+dms[2])/60+(+dms[3])/3600, lng=(+dms[5])+(+dms[6])/60+(+dms[7])/3600; return [dms[4].toUpperCase()==='S'?-lat:lat,dms[8].toUpperCase()==='W'?-lng:lng]; }
+function saveNewSpot(event) { event.preventDefault(); if (!canPost('Spot', 120)) { openModal('Bitte kurz warten', '<p style="color:var(--text-muted);font-size:13px">Spot-Vorschläge sind zum Schutz vor Spam nur alle zwei Minuten möglich.</p>'); return; } const coords=parseCoordinates(document.getElementById('new-spot-coords').value); if(!coords){openModal('Koordinaten prüfen','<p style="color:var(--text-muted);font-size:13px">Bitte nutze Dezimalgrad oder Grad/Minuten/Sekunden.</p>');return;} const selected=[...document.querySelectorAll('input[name="spot-sec"]:checked')].reduce((o,x)=>(o[x.value]=true,o),{}); const create=(image)=>{const spots=spotStore.get();spots.push({id:`user-${Date.now()}`,name:document.getElementById('new-spot-name').value.trim(),category:document.getElementById('new-spot-category').value,latitude:coords[0],longitude:coords[1],description:document.getElementById('new-spot-desc').value.trim(),image:image||'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=700&q=80',security:selected,gallery:[],author:'Felix S.'});spotStore.set(spots);grantXP(30);closeModal();renderMarkers();}; const file=document.getElementById('new-spot-image').files[0];if(file&&file.size<=2*1024*1024){const reader=new FileReader();reader.onload=()=>create(reader.result);reader.readAsDataURL(file)}else create(null); }
+
+function openReportModal(place) { openModal('Spot melden', `<form class="add-spot-form" onsubmit="saveReport(event, '${place.id}')"><p>Missbrauch, falsche Angaben oder sensible Informationen? Das Team prüft jede Meldung.</p><select id="report-reason"><option>Falsche oder veraltete Angaben</option><option>Sensible Zugangsinformationen</option><option>Rechtsverletzung / Eigentumsproblem</option><option>Anderer Grund</option></select><textarea id="report-note" maxlength="500" placeholder="Optionale Erläuterung"></textarea><button class="btn-primary-action">Meldung senden</button></form>`); }
+function saveReport(event, spotId) { event.preventDefault(); if(!canPost('Report',60))return; const reports=reportStore.get();reports.push({id:Date.now(),spotId,reason:document.getElementById('report-reason').value,note:document.getElementById('report-note').value,status:'pending'});reportStore.set(reports);openModal('Meldung erhalten','<p style="color:var(--text-muted);font-size:13px">Danke. Das Moderationsteam prüft den Hinweis.</p>'); }
 
 function openModal(title, bodyContent = '') {
   const modal = document.getElementById('modal-overlay');

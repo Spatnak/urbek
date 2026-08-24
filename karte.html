@@ -23,7 +23,7 @@
   <div id="map"></div>
 
   <header class="panel main-header">
-    <div class="brand-section" onclick="openModal('Startseite')">
+    <div class="brand-section" onclick="location.href='index.html'">
       <div class="logo-badge">📍</div>
       <div class="brand-title">URBEX<span>MAP</span></div>
     </div>
@@ -33,17 +33,7 @@
       <input id="search-input" type="text" placeholder="Suchen…">
     </div>
 
-    <div class="nav-actions">
-      <button class="btn-nav" onclick="openModal('Startseite')">
-        <span>🏠</span><span class="text-label">Start</span>
-      </button>
-      <button class="btn-nav" onclick="openModal('Login')">
-        <span>🔑</span><span class="text-label">Login</span>
-      </button>
-      <button class="btn-nav btn-nav-primary" onclick="openModal('Registrieren')">
-        <span>✨</span><span class="text-label">Register</span>
-      </button>
-    </div>
+    <div class="nav-actions"><a class="btn-nav" href="index.html">🏠 <span class="text-label">Start</span></a><a class="btn-nav" href="benachrichtigungen.html">🔔 <span class="text-label">Hinweise</span></a><a class="btn-nav btn-nav-primary" href="profil.html">👤 <span class="text-label">Profil</span></a><button class="theme-toggle" onclick="toggleMapTheme()" title="Hell- oder Dunkelmodus"><span class="theme-glyph">☀︎</span></button></div>
   </header>
 
   <div class="panel map-style-switch">
@@ -104,6 +94,12 @@
         <div class="gallery-container" id="gallery-list"></div>
       </div>
 
+      <div>
+        <div class="section-title" style="margin-bottom:7px;"><span>Kommentare</span></div>
+        <div class="comment-list" id="comment-list"></div>
+        <form class="comment-form" onsubmit="saveComment(event)"><input id="comment-input" maxlength="280" placeholder="Einen respektvollen Kommentar schreiben …"><button aria-label="Kommentar senden">➤</button></form>
+      </div>
+
       <div class="info-grid">
         <div class="info-item">
           <span class="label">Koordinaten</span>
@@ -147,6 +143,10 @@
     </div>
   </div>
 
+  <button class="add-spot-fab" onclick="openAddSpotModal()">＋ <span>Spot hinzufügen</span></button>
+
+  <script src="api-config.js"></script>
+  <script src="app.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
