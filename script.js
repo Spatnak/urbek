@@ -1,15 +1,15 @@
 const SVG_ICONS = {
-  ruins: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h2m-2 4h2m4-4h2m-4 4h2"/></svg>`,
+  ruins: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21v-8l4-3v4l4-3v10M15 21V7l4 2v12M7 17h2m7-5h2"/></svg>`,
   house: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
   hospital: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6v12m-6-6h12"/><rect x="3" y="3" width="18" height="18" rx="2"/></svg>`,
   industrial: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M4 20V10l4 2V8l4 2V4l8 4v12"/></svg>`,
-  bunker: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
-  entertainment: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 000 20M2 12h20"/></svg>`,
-  military: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  bunker: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21v-7a7 7 0 0114 0v7M9 21v-5h6v5M5 11h14"/></svg>`,
+  entertainment: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 5l3 4M15 5l3 4M3 10h18M8 14h8"/></svg>`,
+  military: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17h18M5 17v-5h10l2 2h2v3M8 12l2-4h5M5 20h2m10 0h2"/><circle cx="8" cy="20" r="1"/><circle cx="16" cy="20" r="1"/></svg>`,
   castle: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21V11l-2-2-2 2V5l-2-2-2 2v6L7 9 5 11v10M3 21h18"/></svg>`,
-  underground: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>`,
+  underground: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21V12a9 9 0 0118 0v9M7 21v-7a5 5 0 0110 0v7M3 21h18M12 15v6"/></svg>`,
   vehicles: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17a2 2 0 100-4 2 2 0 000 4zm14 0a2 2 0 100-4 2 2 0 000 4z"/><path d="M15 9l-2-4H7L5 9M3 11h18v4H3z"/></svg>`,
-  infrastructure: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18l8-14 8 14M2 18h20M8 11h8"/></svg>`
+  infrastructure: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M4 20v-4a8 8 0 0116 0v4M8 20v-3a4 4 0 018 0v3M3 11h18"/></svg>`
 };
 
 const CATEGORIES = {
@@ -265,6 +265,8 @@ function showDetails(place) {
   updateSecurityBadge('sec-alarm', place.security?.alarm);
   updateSecurityBadge('sec-cameras', place.security?.cameras);
   updateSecurityBadge('sec-dogs', place.security?.dogs);
+  const bauWatchStatus = document.getElementById('sec-dogs');
+  if (bauWatchStatus?.lastChild) bauWatchStatus.lastChild.nodeValue = ' 🏗 BauWatch';
 
   const galleryList = document.getElementById('gallery-list');
   let galleryHtml = '';
@@ -334,6 +336,8 @@ function openSecurityModal() {
     </form>
   `;
   openModal('Sicherheits-Status melden', bodyHtml);
+  const bauWatchOption = document.querySelector('#check-dogs')?.parentElement;
+  if (bauWatchOption?.lastChild) bauWatchOption.lastChild.nodeValue = ' 🏗 BauWatch';
 }
 
 function saveSecurityStatus() {
@@ -396,6 +400,51 @@ function saveNewSpot(event) { event.preventDefault(); if (!canPost('Spot', 120))
 function openReportModal(place) { openModal('Spot melden', `<form class="add-spot-form" onsubmit="saveReport(event, '${place.id}')"><p>Missbrauch, falsche Angaben oder sensible Informationen? Das Team prüft jede Meldung.</p><select id="report-reason"><option>Falsche oder veraltete Angaben</option><option>Sensible Zugangsinformationen</option><option>Rechtsverletzung / Eigentumsproblem</option><option>Anderer Grund</option></select><textarea id="report-note" maxlength="500" placeholder="Optionale Erläuterung"></textarea><button class="btn-primary-action">Meldung senden</button></form>`); }
 function saveReport(event, spotId) { event.preventDefault(); if(!canPost('Report',60))return; const reports=reportStore.get();reports.push({id:Date.now(),spotId,reason:document.getElementById('report-reason').value,note:document.getElementById('report-note').value,status:'pending'});reportStore.set(reports);openModal('Meldung erhalten','<p style="color:var(--text-muted);font-size:13px">Danke. Das Moderationsteam prüft den Hinweis.</p>'); }
 
+function saveNewSpot(event) {
+  event.preventDefault();
+  if (!canPost('Spot', 120)) {
+    openModal('Bitte kurz warten', '<p style="color:var(--text-muted);font-size:13px">Spot-Vorschläge sind zum Schutz vor Spam nur alle zwei Minuten möglich.</p>');
+    return;
+  }
+
+  const coords = parseCoordinates(document.getElementById('new-spot-coords').value);
+  if (!coords) {
+    openModal('Koordinaten prüfen', '<p style="color:var(--text-muted);font-size:13px">Bitte nutze Dezimalgrad oder Grad/Minuten/Sekunden.</p>');
+    return;
+  }
+
+  const security = [...document.querySelectorAll('input[name="spot-sec"]:checked')]
+    .reduce((values, input) => ({ ...values, [input.value]: true }), {});
+  const files = [...document.getElementById('new-spot-image').files]
+    .filter(file => file.type.startsWith('image/') && file.size <= 2 * 1024 * 1024)
+    .slice(0, 5);
+  const readImage = file => new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+
+  Promise.all(files.map(readImage)).then(images => {
+    const spots = spotStore.get();
+    spots.push({
+      id: `user-${Date.now()}`,
+      name: document.getElementById('new-spot-name').value.trim(),
+      category: document.getElementById('new-spot-category').value,
+      latitude: coords[0],
+      longitude: coords[1],
+      description: document.getElementById('new-spot-desc').value.trim(),
+      image: images[0] || 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?w=700&q=80',
+      security,
+      gallery: images,
+      author: 'Felix S.'
+    });
+    spotStore.set(spots);
+    grantXP(30);
+    closeModal();
+    renderMarkers();
+  });
+}
+
 function openModal(title, bodyContent = '') {
   const modal = document.getElementById('modal-overlay');
   document.getElementById('modal-title').innerText = title;
@@ -403,6 +452,40 @@ function openModal(title, bodyContent = '') {
     document.getElementById('modal-body').innerHTML = bodyContent;
   } else {
     document.getElementById('modal-body').innerHTML = `<p style="color:var(--text-muted); font-size:13px;">Funktion „${title}“ wird angebunden.</p>`;
+  }
+  if (title === 'Neuen Spot vorschlagen') {
+    const form = document.querySelector('.add-spot-form');
+    const submitButton = form?.querySelector('[type="submit"]');
+    if (form && submitButton) {
+      const actions = document.createElement('div');
+      actions.className = 'add-spot-actions';
+      const cancelButton = document.createElement('button');
+      cancelButton.type = 'button';
+      cancelButton.className = 'btn-secondary-action';
+      cancelButton.textContent = 'Abbrechen';
+      cancelButton.onclick = closeModal;
+      actions.append(cancelButton, submitButton);
+      form.appendChild(actions);
+
+      const imageInput = form.querySelector('#new-spot-image');
+      const uploadLabel = form.querySelector('.upload-file');
+      const bauWatchOption = form.querySelector('input[value="dogs"]')?.parentElement;
+      const securityIcons = {
+        security: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>',
+        alarm: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>',
+        cameras: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h12l4 4v7H3z"/><path d="M15 12l4-3 2 1v6l-2 1-4-3"/><circle cx="9" cy="15" r="2"/></svg>',
+        dogs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21V9l8-6 8 6v12M9 21v-5h6v5M8 10h.01M16 10h.01"/></svg>'
+      };
+      if (imageInput) imageInput.multiple = true;
+      if (uploadLabel?.firstChild) uploadLabel.firstChild.nodeValue = '📷 Bilder hinzufügen (optional)';
+      if (bauWatchOption?.lastChild) bauWatchOption.lastChild.nodeValue = ' BauWatch';
+      form.querySelectorAll('input[name="spot-sec"]').forEach(input => {
+        const icon = document.createElement('span');
+        icon.className = `security-option-icon security-option-icon-${input.value}`;
+        icon.innerHTML = securityIcons[input.value];
+        input.insertAdjacentElement('afterend', icon);
+      });
+    }
   }
   modal.style.display = 'flex';
 }
