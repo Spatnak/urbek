@@ -76,7 +76,8 @@ const TILE_LAYERS = {
 };
 
 let currentLayer = TILE_LAYERS.street;
-let currentCat = 'all';
+let selectedCategories = new Set();
+let pendingCategories = new Set();
 let searchQuery = '';
 let map, clusterGroup;
 let activePlace = null;
@@ -119,10 +120,13 @@ function switchTileLayer(type) {
 
 function renderFilterDropdown() {
   const container = document.getElementById('category-menu');
-  let html = `<button onclick="setCategory('all')" id="cat-btn-all" class="cat-item-btn active" style="grid-column: span 2;"><span>🌐</span> <span>Alle Kategorien</span></button>`;
+  const allActive = pendingCategories.size === Object.keys(CATEGORIES).length ? ' active' : '';
+  let html = `<button onclick="setCategory('all')" id="cat-btn-all" class="cat-item-btn${allActive}" style="grid-column: span 2;"><span class="cat-item-icon cat-item-icon-all" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.8 2.5 4.2 5.5 4.2 9S14.8 18.5 12 21c-2.8-2.5-4.2-5.5-4.2-9S9.2 5.5 12 3z"/></svg></span><span>Alle Kategorien</span></button>`;
   Object.entries(CATEGORIES).forEach(([key, cat]) => {
-    html += `<button onclick="setCategory('${key}')" id="cat-btn-${key}" class="cat-item-btn"><span style="color:${cat.color};">•</span> <span>${cat.name}</span></button>`;
+    const isActive = pendingCategories.has(key) ? ' active' : '';
+    html += `<button onclick="setCategory('${key}')" id="cat-btn-${key}" class="cat-item-btn${isActive}"><span class="cat-item-icon" style="color:${cat.color};" aria-hidden="true">${cat.icon}</span><span>${cat.name}</span></button>`;
   });
+  html += `<button onclick="confirmCategories()" class="btn-confirm-categories">Auswahl bestätigen</button>`;
   container.innerHTML = html;
 }
 
@@ -137,14 +141,36 @@ function closeCategoryMenu() {
 }
 
 function setCategory(catKey) {
-  currentCat = catKey;
-  document.querySelectorAll('.cat-item-btn').forEach(b => b.classList.remove('active'));
-  const activeBtn = document.getElementById(`cat-btn-${catKey}`);
-  if (activeBtn) activeBtn.classList.add('active');
-  const label = catKey === 'all' ? 'Alle Kategorien' : CATEGORIES[catKey].name;
+  if (catKey === 'all') {
+    const categoryKeys = Object.keys(CATEGORIES);
+    pendingCategories = pendingCategories.size === categoryKeys.length
+      ? new Set()
+      : new Set(categoryKeys);
+  } else if (pendingCategories.has(catKey)) {
+    pendingCategories.delete(catKey);
+  } else {
+    pendingCategories.add(catKey);
+  }
+
+  renderFilterDropdown();
+  applyCategorySelection();
+}
+
+function applyCategorySelection() {
+  selectedCategories = new Set(pendingCategories);
+  const label = selectedCategories.size === 0
+    ? 'Keine Kategorien'
+    : selectedCategories.size === Object.keys(CATEGORIES).length
+      ? 'Alle Kategorien'
+    : selectedCategories.size === 1
+      ? CATEGORIES[[...selectedCategories][0]].name
+      : `${selectedCategories.size} Kategorien`;
   document.getElementById('selected-cat-label').innerText = label;
-  closeCategoryMenu();
   renderMarkers();
+}
+
+function confirmCategories() {
+  closeCategoryMenu();
 }
 
 function createCustomPinSVG(color, iconSvg) {
@@ -163,7 +189,7 @@ function createCustomPinSVG(color, iconSvg) {
 function renderMarkers() {
   clusterGroup.clearLayers();
   const filtered = MOCK_PLACES.filter(place => {
-    const matchesCat = currentCat === 'all' || place.category === currentCat;
+    const matchesCat = selectedCategories.size > 0 && selectedCategories.has(place.category);
     const matchesSearch = !searchQuery || place.name.toLowerCase().includes(searchQuery);
     return matchesCat && matchesSearch;
   });
