@@ -183,8 +183,17 @@ function switchTileLayer(type) {
   map.removeLayer(currentLayer);
   currentLayer = TILE_LAYERS[type];
   currentLayer.addTo(map);
-  document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`layer-${type}`).classList.add('active');
+  document.querySelectorAll('.layer-btn').forEach(button => {
+    button.classList.remove('active');
+    button.style.removeProperty('background');
+    button.style.removeProperty('color');
+    button.style.removeProperty('border');
+  });
+  const activeButton = document.getElementById(`layer-${type}`);
+  activeButton.classList.add('active');
+  activeButton.style.background = '#3d9a6a';
+  activeButton.style.color = '#fff';
+  activeButton.style.border = '1px solid #2b7049';
 }
 
 function renderFilterDropdown() {
