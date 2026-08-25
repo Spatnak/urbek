@@ -66,6 +66,42 @@ const MOCK_PLACES = [
     gallery: [
       "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=300&q=80"
     ]
+  },
+  {
+    id: 4,
+    name: "Bahnbetriebswerk Ost",
+    category: "infrastructure",
+    latitude: 50.0935,
+    longitude: 8.6488,
+    image: "https://images.unsplash.com/photo-1473445361085-b9a07f55608b?w=700&q=80",
+    description: "Ehemaliges Bahnbetriebswerk mit Werkhalle und abgestellten Waggons.",
+    security: { security: false, alarm: false, cameras: true, dogs: false },
+    gallery: ["https://images.unsplash.com/photo-1473445361085-b9a07f55608b?w=300&q=80"],
+    author: "Mara K."
+  },
+  {
+    id: 5,
+    name: "Villa am Taunusrand",
+    category: "house",
+    latitude: 50.1431,
+    longitude: 8.5662,
+    image: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=700&q=80",
+    description: "Leerstehende Gründerzeitvilla mit überwachsenem Garten und alten Details.",
+    security: { security: false, alarm: false, cameras: false, dogs: false },
+    gallery: ["https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=300&q=80"],
+    author: "Jonas R."
+  },
+  {
+    id: 6,
+    name: "Kino Lichtspiel",
+    category: "entertainment",
+    latitude: 50.0760,
+    longitude: 8.7205,
+    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=700&q=80",
+    description: "Kleines Programmkino aus den 1950ern mit verblasstem Foyer und Vorführraum.",
+    security: { security: true, alarm: false, cameras: false, dogs: false },
+    gallery: ["https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=300&q=80"],
+    author: "Lena W."
   }
 ];
 
@@ -76,17 +112,20 @@ const TILE_LAYERS = {
 };
 
 let currentLayer = TILE_LAYERS.street;
-let selectedCategories = new Set();
-let pendingCategories = new Set();
+let selectedCategories = new Set(Object.keys(CATEGORIES));
+let pendingCategories = new Set(Object.keys(CATEGORIES));
 let searchQuery = '';
 let map, clusterGroup;
 let activePlace = null;
 const spotStore = { get: () => JSON.parse(localStorage.getItem('urbexSpots') || '[]'), set: value => localStorage.setItem('urbexSpots', JSON.stringify(value)) };
 const subscriptionStore = { get: () => JSON.parse(localStorage.getItem('urbexSubscriptions') || '[]'), set: value => localStorage.setItem('urbexSubscriptions', JSON.stringify(value)) };
-const userStore = { get: () => JSON.parse(localStorage.getItem('urbexUser') || '{"xp":120,"level":2}'), set: value => localStorage.setItem('urbexUser', JSON.stringify(value)) };
+const userStore = { get: () => JSON.parse(localStorage.getItem('urbexUser') || '{"xp":200,"level":2}'), set: value => localStorage.setItem('urbexUser', JSON.stringify(value)) };
 const reportStore = { get: () => JSON.parse(localStorage.getItem('urbexReports') || '[]'), set: value => localStorage.setItem('urbexReports', JSON.stringify(value)) };
+const reviewStore = { get: () => JSON.parse(localStorage.getItem('urbexReviews') || '{}'), set: value => localStorage.setItem('urbexReviews', JSON.stringify(value)) };
+const savedSpotStore = { get: () => JSON.parse(localStorage.getItem('urbexSavedSpots') || '[]'), set: value => localStorage.setItem('urbexSavedSpots', JSON.stringify(value)) };
+const accessSettings = { get: () => ({ beginner: 0, advanced: 10, full: 25, ...JSON.parse(localStorage.getItem('urbexAccessSettings') || '{}') }) };
 
-function grantXP(amount) { const user = userStore.get(); user.xp += amount; user.level = user.xp >= 700 ? 5 : user.xp >= 400 ? 3 : user.xp >= 100 ? 2 : 1; userStore.set(user); }
+function grantXP(amount) { const user = userStore.get(); user.xp += amount; user.level = Math.max(0, Math.floor(user.xp / 100)); userStore.set(user); }
 function canPost(key, waitSeconds) { const now = Date.now(), last = Number(localStorage.getItem(`urbexLast${key}`) || 0); if (now - last < waitSeconds * 1000) return false; localStorage.setItem(`urbexLast${key}`, String(now)); return true; }
 
 function toggleMapTheme() {
@@ -211,10 +250,13 @@ function createCustomPinSVG(color, iconSvg) {
 
 function renderMarkers() {
   clusterGroup.clearLayers();
+  const userLevel = userStore.get().level || 0;
+  const limits = accessSettings.get();
   const filtered = [...MOCK_PLACES, ...spotStore.get()].filter(place => {
     const matchesCat = selectedCategories.size > 0 && selectedCategories.has(place.category);
     const matchesSearch = !searchQuery || place.name.toLowerCase().includes(searchQuery);
-    return matchesCat && matchesSearch;
+    const tier = place.accessTier || (place.id <= 3 ? 'beginner' : place.id <= 5 ? 'advanced' : 'full');
+    return matchesCat && matchesSearch && userLevel >= limits[tier];
   });
 
   filtered.forEach(place => {
@@ -247,6 +289,10 @@ function showDetails(place) {
   document.getElementById('detail-cat').style.color = cat.color;
   document.getElementById('detail-cat').style.borderColor = cat.color + "55";
   document.getElementById('detail-coords').innerText = `${place.latitude.toFixed(4)}, ${place.longitude.toFixed(4)}`;
+  const saveButton = document.getElementById('save-spot-button');
+  const isSaved = savedSpotStore.get().some(item => item.id === place.id);
+  saveButton.innerHTML = isSaved ? '★ Gespeichert' : '☆ Speichern';
+  saveButton.classList.toggle('is-saved', isSaved);
 
   let bell = document.getElementById('spot-subscribe-button');
   if (!bell) { bell = document.createElement('button'); bell.id = 'spot-subscribe-button'; bell.className = 'spot-subscribe'; document.querySelector('.tag-group').appendChild(bell); }
@@ -281,6 +327,7 @@ function showDetails(place) {
   galleryList.innerHTML = galleryHtml;
 
   renderComments(place);
+  renderRatingSummary(place);
 
   document.getElementById('detail-route-btn').onclick = () => {
     window.open(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`, '_blank');
@@ -291,10 +338,15 @@ function showDetails(place) {
 
 function renderComments(place) {
   const comments = commentStore.get()[place.id] || [];
-  document.getElementById('comment-list').innerHTML = comments.length
-    ? comments.map(comment => `<div class="comment"><b>${comment.author}</b><p>${comment.text}</p></div>`).join('')
+  const reviews = reviewStore.get()[place.id] || [];
+  const all = [...reviews, ...comments].sort((a, b) => b.createdAt - a.createdAt);
+  document.getElementById('comment-list').innerHTML = all.length
+    ? all.map(comment => `<div class="comment"><div><b>${comment.author}</b>${comment.stars ? `<span class="review-stars">${'★'.repeat(comment.stars)}${'☆'.repeat(5-comment.stars)}</span>` : ''}</div><p>${comment.text || 'Hat diesen Spot bewertet.'}</p><small>${formatRelativeDate(comment.createdAt)}</small></div>`).join('')
     : '<p class="empty-comment">Noch keine Kommentare. Teile hilfreiche Hinweise, ohne sensible Zugänge preiszugeben.</p>';
 }
+
+function renderRatingSummary(place) { const reviews = reviewStore.get()[place.id] || []; const average = reviews.length ? (reviews.reduce((sum, review) => sum + review.stars, 0) / reviews.length).toFixed(1) : '–'; document.getElementById('rating-summary').innerHTML = `<b>${average} <span>★</span></b><span>${reviews.length ? `${reviews.length} Bewertung${reviews.length === 1 ? '' : 'en'}` : 'Noch keine Bewertungen'}</span>`; }
+function formatRelativeDate(timestamp) { if (!timestamp) return 'Gerade eben'; const days = Math.floor((Date.now() - timestamp) / 86400000); return days ? `Vor ${days} Tag${days === 1 ? '' : 'en'}` : 'Heute'; }
 
 function saveComment(event) {
   event.preventDefault();
@@ -302,13 +354,16 @@ function saveComment(event) {
   const text = field.value.trim();
   if (!text || !activePlace) return;
   if (!canPost('Comment', 30)) { openModal('Bitte kurz warten', '<p style="color:var(--text-muted);font-size:13px">Zum Schutz vor Spam ist ein Kommentar alle 30 Sekunden möglich.</p>'); return; }
-  const comments = commentStore.get();
-  comments[activePlace.id] = [...(comments[activePlace.id] || []), { author: 'Felix S.', text }];
-  commentStore.set(comments);
-  grantXP(5);
+  const reviews = reviewStore.get();
+  reviews[activePlace.id] = [...(reviews[activePlace.id] || []), { author: 'Felix S.', stars: Number(document.getElementById('review-stars').value), text, createdAt: Date.now() }];
+  reviewStore.set(reviews);
   field.value = '';
   renderComments(activePlace);
+  renderRatingSummary(activePlace);
 }
+
+function toggleSavedSpot() { if (!activePlace) return; const saved = savedSpotStore.get(); const exists = saved.some(item => item.id === activePlace.id); savedSpotStore.set(exists ? saved.filter(item => item.id !== activePlace.id) : [...saved, { id: activePlace.id, name: activePlace.name, category: activePlace.category, image: activePlace.image }]); showDetails(activePlace); }
+function openCoordinateChoice() { if (!activePlace) return; const { latitude, longitude } = activePlace; openModal('Koordinaten öffnen', `<p style="color:var(--text-muted);font-size:13px;line-height:1.5">Wo möchtest du diesen Ort ansehen?</p><div class="actions"><a class="button primary" target="_blank" href="https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}">Google Maps</a><a class="button" target="_blank" href="https://earth.google.com/web/search/${latitude},${longitude}">Google Earth</a></div>`); }
 
 function updateSecurityBadge(elementId, isActive) {
   const el = document.getElementById(elementId);

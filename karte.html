@@ -96,14 +96,15 @@
 
       <div>
         <div class="section-title" style="margin-bottom:7px;"><span>Kommentare</span></div>
+        <div class="rating-summary" id="rating-summary"></div>
         <div class="comment-list" id="comment-list"></div>
-        <form class="comment-form" onsubmit="saveComment(event)"><input id="comment-input" maxlength="280" placeholder="Einen respektvollen Kommentar schreiben …"><button aria-label="Kommentar senden">➤</button></form>
+        <form class="comment-form review-form" onsubmit="saveComment(event)"><select id="review-stars" aria-label="Bewertung"><option value="5">★★★★★</option><option value="4">★★★★☆</option><option value="3">★★★☆☆</option><option value="2">★★☆☆☆</option><option value="1">★☆☆☆☆</option></select><input id="comment-input" maxlength="280" placeholder="Bewertung oder Kommentar schreiben …"><button aria-label="Bewertung senden">➤</button></form>
       </div>
 
       <div class="info-grid">
         <div class="info-item">
           <span class="label">Koordinaten</span>
-          <span class="val" id="detail-coords">-</span>
+          <button class="val coordinate-button" id="detail-coords" onclick="openCoordinateChoice()">-</button>
         </div>
         <div class="info-item">
           <span class="label">Zugänglichkeit</span>
@@ -118,6 +119,7 @@
         <button class="btn-primary-action" id="detail-route-btn">
           <span>🧭</span> Navigation
         </button>
+        <button class="btn-secondary-action save-spot-button" id="save-spot-button" onclick="toggleSavedSpot()">☆ Speichern</button>
       </div>
     </div>
   </div>
