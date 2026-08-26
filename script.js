@@ -159,10 +159,11 @@ function initMap() {
     showCoverageOnHover: false,
     maxClusterRadius: 35,
     iconCreateFunction: function(cluster) {
+      const count = cluster.getChildCount();
       return L.divIcon({
-        html: `<div>${cluster.getChildCount()}</div>`,
+        html: `<div class="cluster-count" aria-label="${count} zusammengefasste Spots"><strong>${count}</strong><span>Spots</span></div>`,
         className: 'marker-cluster-custom',
-        iconSize: L.point(32, 32)
+        iconSize: L.point(42, 42)
       });
     }
   });
@@ -342,6 +343,7 @@ function showDetails(place) {
     window.open(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`, '_blank');
   };
 
+  panel.classList.add('is-open');
   panel.style.display = 'flex';
 }
 
@@ -381,7 +383,9 @@ function updateSecurityBadge(elementId, isActive) {
 }
 
 function closeDetails() {
-  document.getElementById('details-panel').style.display = 'none';
+  const panel = document.getElementById('details-panel');
+  panel.classList.remove('is-open');
+  panel.style.display = 'none';
   activePlace = null;
 }
 
