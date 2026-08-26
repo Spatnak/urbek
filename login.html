@@ -1,0 +1,304 @@
+```html
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Anmelden | URBEX MAP</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .login-page {
+            min-height: calc(100vh - 68px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 22px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .login-header {
+            margin-bottom: 25px;
+        }
+
+        .login-header .eyebrow {
+            margin-bottom: 9px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            letter-spacing: -0.8px;
+            margin-bottom: 8px;
+        }
+
+        .login-header p {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-label-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .form-group label {
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .forgot-link {
+            color: var(--accent);
+            font-size: 10px;
+            text-decoration: none;
+        }
+
+        .forgot-link:hover {
+            text-decoration: underline;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 12px;
+            background: #0c0f14;
+            border: 1px solid var(--panel-border);
+            border-radius: 7px;
+            color: var(--text);
+            font: 13px Inter, sans-serif;
+            outline: none;
+            transition:
+                border-color .15s ease,
+                background .15s ease,
+                box-shadow .15s ease;
+        }
+
+        .form-group input::placeholder {
+            color: #68717b;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent);
+            background: #11161b;
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            color: var(--text-muted);
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .remember input {
+            accent-color: var(--accent);
+            width: 15px;
+            height: 15px;
+        }
+
+        .login-submit {
+            width: 100%;
+            min-height: 42px;
+            margin-top: 3px;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .register-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 700px) {
+            .login-page {
+                min-height: calc(100vh - 110px);
+                padding: 30px 16px;
+                align-items: flex-start;
+            }
+
+            .login-card {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="app-page">
+
+<header class="topbar">
+
+    <a class="brand" href="index.html">
+        <b>📍 URBEX<span>MAP</span></b>
+    </a>
+
+    <nav>
+        <a href="index.html">Start</a>
+        <a class="nav-map-link" href="karte.html">Karte</a>
+
+        <a href="benachrichtigungen.html">
+            Benachrichtigungen <i class="badge">3</i>
+        </a>
+
+        <a href="profil.html">Profil</a>
+    </nav>
+
+    <a class="avatar" href="profil.html">FS</a>
+
+</header>
+
+
+<main class="login-page">
+
+    <section class="login-card">
+
+        <div class="login-header">
+
+            <p class="eyebrow">
+                URBEX MAP · WILLKOMMEN ZURÜCK
+            </p>
+
+            <h1>Anmelden</h1>
+
+            <p>
+                Melde dich an, um deine gespeicherten Spots,
+                Fotos und Aktivitäten aufzurufen.
+            </p>
+
+        </div>
+
+
+        <form class="login-form" action="#" method="post">
+
+            <div class="form-group">
+
+                <label for="username">
+                    Benutzername oder E-Mail
+                </label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="Benutzername oder E-Mail"
+                    autocomplete="username"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <div class="form-label-row">
+
+                    <label for="password">
+                        Passwort
+                    </label>
+
+                    <a
+                        class="forgot-link"
+                        href="passwort-vergessen.html"
+                    >
+                        Passwort vergessen?
+                    </a>
+
+                </div>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    autocomplete="current-password"
+                    required
+                >
+
+            </div>
+
+
+            <label class="remember">
+
+                <input
+                    type="checkbox"
+                    name="remember"
+                >
+
+                <span>
+                    Angemeldet bleiben
+                </span>
+
+            </label>
+
+
+            <button
+                type="submit"
+                class="button primary login-submit"
+            >
+                Anmelden
+            </button>
+
+        </form>
+
+
+        <div class="register-link">
+
+            Noch kein Konto?
+
+            <a href="register.html">
+                Jetzt registrieren
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
+

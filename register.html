@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Registrieren | URBEX MAP</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .register-page {
+            min-height: calc(100vh - 68px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 22px;
+        }
+
+        .register-card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            padding: 30px;
+        }
+
+        .register-header {
+            margin-bottom: 25px;
+        }
+
+        .register-header .eyebrow {
+            margin-bottom: 9px;
+        }
+
+        .register-header h1 {
+            font-size: 28px;
+            letter-spacing: -0.8px;
+            margin-bottom: 8px;
+        }
+
+        .register-header p {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.55;
+        }
+
+        .register-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 11px 12px;
+            background: #0c0f14;
+            border: 1px solid var(--panel-border);
+            border-radius: 7px;
+            color: var(--text);
+            font: 13px Inter, sans-serif;
+            outline: none;
+            transition: border-color .15s ease,
+                        background .15s ease,
+                        box-shadow .15s ease;
+        }
+
+        .form-group input::placeholder {
+            color: #68717b;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent);
+            background: #11161b;
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .form-hint {
+            color: var(--text-muted);
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .terms {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            color: var(--text-muted);
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .terms input {
+            margin-top: 2px;
+            accent-color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .terms a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .terms a:hover {
+            text-decoration: underline;
+        }
+
+        .register-submit {
+            width: 100%;
+            min-height: 42px;
+            margin-top: 3px;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 18px;
+            border-top: 1px solid var(--panel-border);
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .login-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 700px) {
+            .register-page {
+                min-height: calc(100vh - 110px);
+                padding: 30px 16px;
+                align-items: flex-start;
+            }
+
+            .register-card {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body class="app-page">
+
+<header class="topbar">
+    <a class="brand" href="index.html">
+        <b>📍 URBEX<span>MAP</span></b>
+    </a>
+
+    <nav>
+        <a href="index.html">Start</a>
+        <a class="nav-map-link" href="karte.html">Karte</a>
+        <a href="benachrichtigungen.html">
+            Benachrichtigungen <i class="badge">3</i>
+        </a>
+        <a href="profil.html">Profil</a>
+    </nav>
+
+    <a class="avatar" href="profil.html">FS</a>
+</header>
+
+
+<main class="register-page">
+
+    <section class="register-card">
+
+        <div class="register-header">
+            <p class="eyebrow">URBEX MAP · COMMUNITY</p>
+
+            <h1>Account erstellen</h1>
+
+            <p>
+                Erstelle dein kostenloses Konto und entdecke,
+                speichere und dokumentiere Lost Places gemeinsam
+                mit der Community.
+            </p>
+        </div>
+
+
+        <form class="register-form" action="#" method="post">
+
+            <div class="form-group">
+                <label for="username">Benutzername</label>
+
+                <input
+                    type="text"
+                    id="username"
+                    name="username"
+                    placeholder="z. B. LostExplorer"
+                    autocomplete="username"
+                    minlength="3"
+                    maxlength="30"
+                    required
+                >
+
+                <span class="form-hint">
+                    3–30 Zeichen. Dieser Name wird anderen Nutzern angezeigt.
+                </span>
+            </div>
+
+
+            <div class="form-group">
+                <label for="email">E-Mail-Adresse</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="deine@email.de"
+                    autocomplete="email"
+                    required
+                >
+            </div>
+
+
+            <div class="form-group">
+                <label for="password">Passwort</label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                >
+
+                <span class="form-hint">
+                    Mindestens 8 Zeichen.
+                </span>
+            </div>
+
+
+            <div class="form-group">
+                <label for="password_confirm">Passwort wiederholen</label>
+
+                <input
+                    type="password"
+                    id="password_confirm"
+                    name="password_confirm"
+                    placeholder="••••••••"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                >
+            </div>
+
+
+            <label class="terms">
+                <input
+                    type="checkbox"
+                    name="terms"
+                    required
+                >
+
+                <span>
+                    Ich akzeptiere die
+                    <a href="regeln.html">Urbex-Regeln</a>
+                    und bestätige, dass ich die Community
+                    respektvoll nutzen werde.
+                </span>
+            </label>
+
+
+            <button
+                type="submit"
+                class="button primary register-submit"
+            >
+                Konto erstellen
+            </button>
+
+        </form>
+
+
+        <div class="login-link">
+            Bereits registriert?
+            <a href="login.html">Jetzt anmelden</a>
+        </div>
+
+    </section>
+
+</main>
+
+<script src="app.js"></script>
+
+</body>
+</html>

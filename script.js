@@ -26,10 +26,28 @@ const CATEGORIES = {
   infrastructure: { name: "Infrastruktur", color: "#4c7bc9", icon: SVG_ICONS.infrastructure }
 };
 
+
+//     LEVEL (ACCESS)
+
+// beginner = Level 0
+
+// advanced = Level 10
+
+// full     = Level 25
+
+
+// accessTier: "beginner"
+
+// accessTier: "advanced"
+
+// accessTier: "full"
+
+
 const MOCK_PLACES = [
   {
     id: 1,
     name: "Stahlwerk Hoffnungsthal",
+    accessTier: "beginner",
     category: "industrial",
     latitude: 50.1109,
     longitude: 8.6821,
@@ -41,22 +59,28 @@ const MOCK_PLACES = [
       "https://images.unsplash.com/photo-1508873696983-2df515122519?w=300&q=80"
     ]
   },
+
   {
     id: 2,
-    name: "Sanatorium Waldfrieden",
+    name: "Poliklinik und Uniklinik für Neurochirurgie",
+    accessTier: "beginner",
     category: "hospital",
-    latitude: 50.1250,
-    longitude: 8.6700,
-    image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=700&q=80",
-    description: "Verlassene Lungenheilanstalt tief im Forst.",
+    latitude: 50.09106208213962,
+    longitude: 8.6483095819631,
+    image: "https://nachrichten.idw-online.de/image/11262/original",
+    description: "Das ehemalige Neurochirurgie Gebäude der Uniklinik in Frankfurt.",
     security: { security: false, alarm: false, cameras: false, dogs: false },
     gallery: [
-      "https://images.unsplash.com/photo-1516549655169-df83a0774514?w=300&q=80"
+      "https://nachrichten.idw-online.de/image/11262/original",
+      "https://nachrichten.idw-online.de/image/11263/screen"
     ]
   },
+  
+
   {
     id: 3,
     name: "Atombunker Nord",
+    accessTier: "beginner",
     category: "bunker",
     latitude: 50.1500,
     longitude: 8.7000,
@@ -67,42 +91,22 @@ const MOCK_PLACES = [
       "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=300&q=80"
     ]
   },
+
   {
     id: 4,
-    name: "Bahnbetriebswerk Ost",
-    category: "infrastructure",
-    latitude: 50.0935,
-    longitude: 8.6488,
-    image: "https://images.unsplash.com/photo-1473445361085-b9a07f55608b?w=700&q=80",
-    description: "Ehemaliges Bahnbetriebswerk mit Werkhalle und abgestellten Waggons.",
-    security: { security: false, alarm: false, cameras: true, dogs: false },
-    gallery: ["https://images.unsplash.com/photo-1473445361085-b9a07f55608b?w=300&q=80"],
-    author: "Mara K."
-  },
-  {
-    id: 5,
-    name: "Villa am Taunusrand",
-    category: "house",
-    latitude: 50.1431,
-    longitude: 8.5662,
-    image: "https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=700&q=80",
-    description: "Leerstehende Gründerzeitvilla mit überwachsenem Garten und alten Details.",
+    name: "Ehemaliges St.Josef Krankenhaus",
+    accessTier: "beginner",
+    category: "hospital",
+    latitude: 50.97697143101596,
+    longitude: 6.26887676836649,
+    image: "https://www.dueren-magazin.de/images/Bilder_sonstige_news/2015/juli/ctwPRESSEFOTOCLinnich.jpg",
+    description: "Das ehemalige ST. Josef Krankenhaus in Linnich.",
     security: { security: false, alarm: false, cameras: false, dogs: false },
-    gallery: ["https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=300&q=80"],
-    author: "Jonas R."
+    gallery: [
+      "https://www.dueren-magazin.de/images/Bilder_sonstige_news/2015/juli/ctwPRESSEFOTOCLinnich.jpg",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSoBRLchQTUFTOe4-fhVL82aW3bczga5Yd3kOJAiZOlhLenbWIr6ccE4hTU&s=10"
+    ]
   },
-  {
-    id: 6,
-    name: "Kino Lichtspiel",
-    category: "entertainment",
-    latitude: 50.0760,
-    longitude: 8.7205,
-    image: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=700&q=80",
-    description: "Kleines Programmkino aus den 1950ern mit verblasstem Foyer und Vorführraum.",
-    security: { security: true, alarm: false, cameras: false, dogs: false },
-    gallery: ["https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=300&q=80"],
-    author: "Lena W."
-  }
 ];
 
 const TILE_LAYERS = {
@@ -159,11 +163,10 @@ function initMap() {
     showCoverageOnHover: false,
     maxClusterRadius: 35,
     iconCreateFunction: function(cluster) {
-      const count = cluster.getChildCount();
       return L.divIcon({
-        html: `<div class="cluster-count" aria-label="${count} zusammengefasste Spots"><strong>${count}</strong><span>Spots</span></div>`,
+        html: `<div>${cluster.getChildCount()}</div>`,
         className: 'marker-cluster-custom',
-        iconSize: L.point(42, 42)
+        iconSize: L.point(32, 32)
       });
     }
   });
@@ -324,17 +327,45 @@ function showDetails(place) {
   const bauWatchStatus = document.getElementById('sec-dogs');
   if (bauWatchStatus?.lastChild) bauWatchStatus.lastChild.nodeValue = ' 🏗 BauWatch';
 
-  const galleryList = document.getElementById('gallery-list');
-  let galleryHtml = '';
-  const approvedUploads = uploadStore.get().filter(upload => upload.spot === place.name && upload.status === 'approved').map(upload => upload.url);
-  const visibleGallery = [...(place.gallery || []), ...approvedUploads];
-  if (visibleGallery.length > 0) {
-    visibleGallery.forEach(imgUrl => {
-      galleryHtml += `<img class="gallery-thumb" src="${imgUrl}" onclick="openModal('Foto Ansicht', '<img src=\\'${imgUrl}\\' style=\\'width:100%; border-radius:6px;\\'>')" />`;
-    });
-  }
-  galleryHtml += `<button class="btn-add-photo" onclick="openPhotoModal()"><span>📷</span><span>+ Foto</span></button>`;
-  galleryList.innerHTML = galleryHtml;
+const galleryList = document.getElementById('gallery-list');
+
+galleryList.innerHTML = '';
+
+const approvedUploads = uploadStore.get()
+  .filter(upload => upload.spot === place.name && upload.status === 'approved')
+  .map(upload => upload.url);
+
+const visibleGallery = [...(place.gallery || []), ...approvedUploads];
+
+visibleGallery.forEach(imgUrl => {
+
+  const img = document.createElement('img');
+
+  img.className = 'gallery-thumb';
+  img.src = imgUrl;
+  img.alt = 'Galeriebild';
+  img.style.cursor = 'pointer';
+
+  img.addEventListener('click', () => {
+
+    openModal(
+      'Foto Ansicht',
+      `<img class="gallery-full-image" src="${imgUrl}" alt="Galeriebild">`
+    );
+
+  });
+
+  galleryList.appendChild(img);
+
+});
+
+const addPhotoButton = document.createElement('button');
+
+addPhotoButton.className = 'btn-add-photo';
+addPhotoButton.innerHTML = '<span>📷</span><span>+ Foto</span>';
+addPhotoButton.addEventListener('click', openPhotoModal);
+
+galleryList.appendChild(addPhotoButton);
 
   renderComments(place);
   renderRatingSummary(place);
@@ -343,7 +374,6 @@ function showDetails(place) {
     window.open(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`, '_blank');
   };
 
-  panel.classList.add('is-open');
   panel.style.display = 'flex';
 }
 
@@ -383,9 +413,7 @@ function updateSecurityBadge(elementId, isActive) {
 }
 
 function closeDetails() {
-  const panel = document.getElementById('details-panel');
-  panel.classList.remove('is-open');
-  panel.style.display = 'none';
+  document.getElementById('details-panel').style.display = 'none';
   activePlace = null;
 }
 
