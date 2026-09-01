@@ -345,6 +345,22 @@ header.main-header {
     border-color: var(--danger);
 }
 
+:root[data-theme="light"] .details-panel .tag-pill:not(.cat) {
+    background: #fff1ef !important;
+}
+
+:root[data-theme="light"] .details-panel .btn-close-panel {
+    color: #4a514b !important;
+    background: rgba(255, 255, 255, 0.94) !important;
+    border-color: #9fb5a4 !important;
+}
+
+:root[data-theme="light"] .details-panel .btn-close-panel:hover {
+    color: #fff !important;
+    background: #a8554a !important;
+    border-color: #a8554a !important;
+}
+
 /* =========================================================
    DETAILS CONTENT
 ========================================================= */
@@ -2975,5 +2991,195 @@ header.main-header {
 
     .category-dropdown {
         width: 240px;
+    }
+}
+
+/* Higher-contrast category borders on the map in light mode */
+:root[data-theme="light"] .category-dropdown {
+    border: 2px solid #9aa49d;
+    box-shadow: 0 3px 10px rgba(46, 68, 54, 0.2);
+}
+
+:root[data-theme="light"] .category-dropdown .cat-item-btn {
+    border: 2px solid #a7b1aa;
+}
+
+:root[data-theme="light"] .category-dropdown .cat-item-btn:hover {
+    border-color: #3f6d50;
+}
+
+:root[data-theme="light"] .category-dropdown .cat-item-btn.active {
+    border-color: #315c42;
+}
+
+:root[data-theme="light"] .btn-toggle-categories:hover {
+    color: #fff;
+    background: #4d705a;
+    border-color: #4d705a;
+}
+
+/* Kartenansicht: Satellit bleibt in jedem Lightmode klar lesbar */
+:root[data-theme="light"] .map-style-switch #layer-sat {
+    color: #3d4d43;
+    background: #f5f2ed;
+    border: 1px solid transparent;
+}
+
+:root[data-theme="light"] .map-style-switch #layer-sat:hover:not(.active) {
+    color: #fff;
+    background: #4d705a;
+    border-color: #4d705a;
+}
+
+:root[data-theme="light"] .map-style-switch #layer-sat.active {
+    color: #fff !important;
+    background: #4d705a !important;
+    border-color: #3f604b !important;
+}
+
+/* Kartenansicht: alle Ebenen-Buttons im Lightmode */
+:root[data-theme="light"] .map-style-switch .layer-btn {
+    color: #3d4d43;
+    background: #f5f2ed;
+    border: 1px solid transparent;
+}
+
+:root[data-theme="light"] .map-style-switch .layer-btn:hover:not(.active) {
+    color: #fff;
+    background: #4d705a;
+    border-color: #4d705a;
+}
+
+:root[data-theme="light"] .map-style-switch .layer-btn.active {
+    color: #fff !important;
+    background: #4d705a !important;
+    border-color: #3f604b !important;
+}
+
+/* Add-Spot-Fenster: helle, gut lesbare Flächen im Lightmode */
+:root[data-theme="light"] .modal-box:has(.add-spot-form) .btn-close-panel {
+    color: #4a514b;
+    background: #eef1ed;
+    border-color: #aab8ad;
+}
+
+:root[data-theme="light"] .modal-box:has(.add-spot-form) .btn-close-panel:hover {
+    color: #fff;
+    background: #a8554a;
+    border-color: #a8554a;
+}
+
+:root[data-theme="light"] .add-spot-form p {
+    color: #4f5d54;
+    background: #edf3ee;
+    border-left-color: #5e8b6d;
+}
+
+:root[data-theme="light"] .add-spot-form input,
+:root[data-theme="light"] .add-spot-form select,
+:root[data-theme="light"] .add-spot-form textarea {
+    color: #28342c;
+    background: #fff;
+    border-color: #aebdb1;
+}
+
+:root[data-theme="light"] .add-spot-form input:focus,
+:root[data-theme="light"] .add-spot-form select:focus,
+:root[data-theme="light"] .add-spot-form textarea:focus {
+    background: #fff;
+    border-color: #5e8b6d;
+}
+
+:root[data-theme="light"] .add-spot-form input::placeholder,
+:root[data-theme="light"] .add-spot-form textarea::placeholder {
+    color: #68756c;
+}
+
+:root[data-theme="light"] .upload-file,
+:root[data-theme="light"] .security-select {
+    color: #4f5d54;
+    background: #f5f7f4;
+    border-color: #aebdb1;
+}
+
+:root[data-theme="light"] .security-select legend {
+    color: #34443a;
+}
+
+:root[data-theme="light"] .security-select label {
+    color: #48574d;
+    background: #fff;
+    border-color: #c2cec4;
+}
+
+:root[data-theme="light"] .security-select label:hover {
+    color: #2e5b40;
+    border-color: #6f9a7b;
+    background: #eef5ef;
+}
+
+:root[data-theme="light"] .security-select label:has(input:checked) {
+    color: #28563b;
+    background: #e7f2e9;
+    border-color: #5e8b6d;
+}
+
+:root[data-theme="light"] .add-spot-actions .btn-secondary-action {
+    color: #34443a;
+    background: #f5f7f4;
+    border-color: #aebdb1;
+}
+
+:root[data-theme="light"] .add-spot-actions .btn-secondary-action:hover {
+    color: #fff;
+    background: #4d705a;
+    border-color: #4d705a;
+}
+
+/* Map detail panel: readable controls and reserved room for the filter */
+:root[data-theme="light"] .details-panel .btn-secondary-action {
+    color: #34443a;
+    background: #f5f2ed;
+    border-color: #9fb5a4;
+}
+
+:root[data-theme="light"] .details-panel .btn-secondary-action:hover {
+    color: #fff;
+    background: #4d705a;
+    border-color: #4d705a;
+}
+
+:root[data-theme="light"] .details-panel .btn-add-photo,
+:root[data-theme="light"] .details-panel .review-form select,
+:root[data-theme="light"] .details-panel .comment-form input {
+    color: #34443a;
+    background: #f5f2ed;
+    border-color: #9fb5a4;
+}
+
+:root[data-theme="light"] .details-panel .btn-add-photo:hover,
+:root[data-theme="light"] .details-panel .comment-form button {
+    color: #fff;
+    background: #4d705a;
+    border-color: #4d705a;
+}
+
+.details-panel.is-open {
+    max-height: calc(100vh - 170px);
+}
+
+.details-panel.is-open ~ .filter-wrapper {
+    right: 16px;
+    bottom: 16px;
+}
+
+@media (max-width: 768px) {
+    .details-panel.is-open {
+        max-height: calc(100vh - 150px);
+    }
+
+    .details-panel.is-open ~ .filter-wrapper {
+        right: 8px;
+        bottom: 16px;
     }
 }

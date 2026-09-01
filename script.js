@@ -116,8 +116,8 @@ const TILE_LAYERS = {
 };
 
 let currentLayer = TILE_LAYERS.street;
-let selectedCategories = new Set(Object.keys(CATEGORIES));
-let pendingCategories = new Set(Object.keys(CATEGORIES));
+let selectedCategories = new Set();
+let pendingCategories = new Set();
 let searchQuery = '';
 let map, clusterGroup;
 let activePlace = null;
@@ -374,6 +374,7 @@ galleryList.appendChild(addPhotoButton);
     window.open(`https://www.google.com/maps/search/?api=1&query=${place.latitude},${place.longitude}`, '_blank');
   };
 
+  panel.classList.add('is-open');
   panel.style.display = 'flex';
 }
 
@@ -413,7 +414,9 @@ function updateSecurityBadge(elementId, isActive) {
 }
 
 function closeDetails() {
-  document.getElementById('details-panel').style.display = 'none';
+  const panel = document.getElementById('details-panel');
+  panel.classList.remove('is-open');
+  panel.style.display = 'none';
   activePlace = null;
 }
 
